@@ -1,45 +1,23 @@
-package ru.spbu.crawliver.crawler4j;
+package ru.spbu.crawliver.runtimestats;
 
-import edu.uci.ics.crawler4j.crawler.CrawlConfig;
 import edu.uci.ics.crawler4j.crawler.CrawlController;
-import edu.uci.ics.crawler4j.fetcher.PageFetcher;
-import edu.uci.ics.crawler4j.robotstxt.RobotstxtConfig;
-import edu.uci.ics.crawler4j.robotstxt.RobotstxtServer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import ru.spbu.crawliver.controllers.AbstractCrawlerController;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class MainController {
+public class MainController extends AbstractCrawlerController {
 
-    private static final String crawlStorageFolder = System.getProperty("user.dir") + "/src/main/resources/temp";
-    private static final String entryPoint = "https://www.w3schools.com/sql";
-    private static final String domain = "www.w3schools.com/sql";
-    private static final int politenessDelay = 1000;
-    private static final int depth = 1;
-    private static final int numberOfCrawlers = 4;
+    public MainController(String crawlStorageFolder, String entryPoint,
+                          String domain, int politenessDelay,
+                          int depth, int numberOfCrawlers) {
+        super(crawlStorageFolder, entryPoint, domain, politenessDelay, depth, numberOfCrawlers);
+    }
 
-    private static final Logger logger = LoggerFactory.getLogger(MainController.class);
-
-    public static void main(String[] args) throws Exception {
-
-        // config settings
-        CrawlConfig config = new CrawlConfig();
-        config.setCrawlStorageFolder(crawlStorageFolder);
-        config.setPolitenessDelay(politenessDelay);
-        config.setMaxDepthOfCrawling(depth);
-        // config.setMaxPagesToFetch(1000);
-
-        // controller for this crawl.
-        PageFetcher pageFetcher = new PageFetcher(config);
-        RobotstxtConfig robotstxtConfig = new RobotstxtConfig();
-        RobotstxtServer robotstxtServer = new RobotstxtServer(robotstxtConfig, pageFetcher);
-        CrawlController controller = new CrawlController(config, pageFetcher, robotstxtServer);
-
-        // entry point
-        controller.addSeed(entryPoint);
+    @Override
+    public void crawl() throws Exception {
+        final CrawlController controller = configureController();
 
         CrawlController.WebCrawlerFactory<MainCrawler> factory = () -> new MainCrawler(domain);
         controller.start(factory, numberOfCrawlers);
@@ -47,7 +25,7 @@ public class MainController {
         accumulate(controller.getCrawlersLocalData());
     }
 
-    private static void accumulate(List<Object> data) {
+    private void accumulate(List<Object> data) {
         long pages = 0L;
         long links = 0L;
         long externalLinks = 0L;
