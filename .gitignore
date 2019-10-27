@@ -158,7 +158,6 @@ gradle-app.setting
 **/build/
 
 ### Resources folder ###
-!src/main/resources/temp/.gitignore
 src/main/resources/temp/
 
 # End of https://www.gitignore.io/api/java,gradle,windows,intellij+all
