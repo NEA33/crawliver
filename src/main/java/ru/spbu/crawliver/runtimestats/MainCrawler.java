@@ -1,4 +1,4 @@
-package ru.spbu.crawliver.crawler4j;
+package ru.spbu.crawliver.runtimestats;
 
 import edu.uci.ics.crawler4j.crawler.Page;
 import edu.uci.ics.crawler4j.crawler.WebCrawler;

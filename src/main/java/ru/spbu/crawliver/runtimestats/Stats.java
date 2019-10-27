@@ -1,4 +1,4 @@
-package ru.spbu.crawliver.crawler4j;
+package ru.spbu.crawliver.runtimestats;
 
 import java.util.HashSet;
 import java.util.Set;
