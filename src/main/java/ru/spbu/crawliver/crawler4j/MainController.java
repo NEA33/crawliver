@@ -14,7 +14,7 @@ import java.util.Set;
 
 public class MainController {
 
-    private static final String crawlStorageFolder = System.getProperty("user.dir") + "/src/test/resources/temp";
+    private static final String crawlStorageFolder = System.getProperty("user.dir") + "/src/main/resources/temp";
     private static final String entryPoint = "https://www.w3schools.com/sql";
     private static final String domain = "www.w3schools.com/sql";
     private static final int politenessDelay = 1000;
