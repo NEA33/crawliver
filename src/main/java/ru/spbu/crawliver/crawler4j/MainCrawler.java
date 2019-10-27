@@ -1,4 +1,4 @@
-package ru.spbu.crawliver;
+package ru.spbu.crawliver.crawler4j;
 
 import edu.uci.ics.crawler4j.crawler.Page;
 import edu.uci.ics.crawler4j.crawler.WebCrawler;
