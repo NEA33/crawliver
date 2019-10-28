@@ -2,7 +2,6 @@ package ru.spbu.crawliver.dbstats;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import edu.uci.ics.crawler4j.crawler.CrawlController;
-import org.flywaydb.core.Flyway;
 import ru.spbu.crawliver.controllers.AbstractCrawlerController;
 import ru.spbu.crawliver.helpers.CrawlerProperties;
 import ru.spbu.crawliver.helpers.DatabaseProperties;
@@ -22,20 +21,9 @@ public class PostgreSQLStoringCrawlerController extends AbstractCrawlerControlle
     @Override
     public void crawl() throws Exception {
         final CrawlController controller = configureController();
-        migrate();
         final ComboPooledDataSource pool = configurePool();
         controller.start(new PostgreSQLCrawlerFactory(pool, crawlerProps), crawlerProps.getNumberOfCrawlers());
-
-        pool.close();
-    }
-
-    private void migrate() {
-        Flyway flyway = Flyway.configure().dataSource(
-                databaseProps.getUrl(),
-                databaseProps.getUser(),
-                databaseProps.getPassword()
-        ).load();
-        flyway.migrate();
+        // pool.close();
     }
 
     private ComboPooledDataSource configurePool() throws PropertyVetoException {
