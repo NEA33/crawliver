@@ -11,16 +11,16 @@ import ru.spbu.crawliver.helpers.CrawlerProperties;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-public class MainCrawler extends WebCrawler {
+public class RuntimeStatsCrawler extends WebCrawler {
 
     private final static Pattern FILTERS = Pattern.compile(".*(\\.(css|js|bmp|gif|jpe?g|png|tiff?|mid|mp2|mp3|mp4|wav" +
             "|avi|mov|mpeg|ram|m4v|rm|smil|wmv|swf|wma|zip|rar|gz))$");
 
-    private final Logger logger = LoggerFactory.getLogger(MainCrawler.class);
+    private final Logger logger = LoggerFactory.getLogger(RuntimeStatsCrawler.class);
     private final Stats stats = new Stats();
     private final CrawlerProperties crawlerProps;
 
-    MainCrawler(CrawlerProperties crawlerProps) {
+    RuntimeStatsCrawler(CrawlerProperties crawlerProps) {
         this.crawlerProps = crawlerProps;
     }
 
@@ -57,6 +57,8 @@ public class MainCrawler extends WebCrawler {
             stats.htmlLength.addAndGet(html.length());
             stats.links.addAndGet(links.size());
 
+            logger.info("Domain: " + url.getDomain());
+            logger.info("Sub Domain: " + url.getSubDomain());
             logger.info("Text length: " + text.length());
             logger.info("Html length: " + html.length());
             logger.info("Number of outgoing links: " + links.size());
