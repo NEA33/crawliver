@@ -161,5 +161,6 @@ gradle-app.setting
 src/main/resources/temp/
 src/test/resources/temp/
 src/main/resources/database.properties
+src/test/resources/database.test.properties
 
 # End of https://www.gitignore.io/api/java,gradle,windows,intellij+all
