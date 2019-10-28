@@ -1,7 +1,7 @@
 package ru.spbu.crawliver.dbstats;
 
+import org.flywaydb.core.Flyway;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import ru.spbu.crawliver.controllers.CrawlerController;
 import ru.spbu.crawliver.helpers.CrawlerProperties;
@@ -9,43 +9,42 @@ import ru.spbu.crawliver.helpers.DatabaseProperties;
 
 import java.io.IOException;
 
-public class Tasks {
+public class DatabaseStatsCrawlerCases {
 
     private CrawlerController controller;
-    private CrawlerProperties spbuCrawlerProps;
     private CrawlerProperties w3CrawlerProps;
     private DatabaseProperties databaseProps;
 
     @Before
     public void init() throws IOException {
-        spbuCrawlerProps = new CrawlerProperties("spbu.crawler.properties");
         w3CrawlerProps = new CrawlerProperties("w3school.crawler.properties");
-        databaseProps = new DatabaseProperties("database.properties");
-    }
+        databaseProps = new DatabaseProperties("database.test.properties");
 
-    @Test
-    public void testW3SchoolCrawler() throws Exception {
+        migrate(databaseProps);
+
         controller = new PostgreSQLStoringCrawlerController(
                 w3CrawlerProps,
                 databaseProps
         );
-        controller.crawl();
     }
 
-    @Ignore
     @Test
-    public void testSpbuCrawler() throws Exception {
-        controller = new PostgreSQLStoringCrawlerController(
-                spbuCrawlerProps,
-                databaseProps
-        );
+    public void testW3SchoolCrawler() throws Exception {
         controller.crawl();
     }
 
     @Test
     public void showProps() {
         System.out.println(w3CrawlerProps);
-        System.out.println(spbuCrawlerProps);
         System.out.println(databaseProps);
+    }
+
+    private void migrate(DatabaseProperties databaseProps) {
+        final Flyway flyway = Flyway.configure().dataSource(
+                databaseProps.getUrl(),
+                databaseProps.getUser(),
+                databaseProps.getPassword()
+        ).load();
+        flyway.migrate();
     }
 }
