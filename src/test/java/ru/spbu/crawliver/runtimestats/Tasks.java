@@ -2,18 +2,16 @@ package ru.spbu.crawliver.runtimestats;
 
 import org.junit.Test;
 import ru.spbu.crawliver.controllers.CrawlerController;
+import ru.spbu.crawliver.helpers.CrawlerProperties;
 
 public class Tasks {
 
+    private CrawlerController controller;
+
     @Test
-    public void simpleCrawl() throws Exception {
-        CrawlerController controller = new MainController(
-                System.getProperty("user.dir") + "/src/main/resources/temp",
-                "https://www.w3schools.com/php/",
-                "www.w3schools.com/php",
-                200,
-                1,
-                4
+    public void testW3SchoolCrawler() throws Exception {
+        controller = new MainController(
+                new CrawlerProperties("w3school.crawler.properties")
         );
         controller.crawl();
     }
