@@ -3,6 +3,7 @@ package ru.spbu.crawliver.dbstats;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import edu.uci.ics.crawler4j.crawler.CrawlController;
 import ru.spbu.crawliver.controllers.AbstractCrawlerController;
+import ru.spbu.crawliver.db.PostgreSQLService;
 import ru.spbu.crawliver.helpers.CrawlerProperties;
 import ru.spbu.crawliver.helpers.DatabaseProperties;
 
@@ -22,7 +23,10 @@ public class PostgreSQLStoringCrawlerController extends AbstractCrawlerControlle
     public void crawl() throws Exception {
         final CrawlController controller = configureController();
         final ComboPooledDataSource pool = configurePool();
-        controller.start(new PostgreSQLCrawlerFactory(pool, crawlerProps), crawlerProps.getNumberOfCrawlers());
+        final CrawlController.WebCrawlerFactory<DatabaseStoringCrawler> factory =
+                () -> new DatabaseStoringCrawler(new PostgreSQLService(pool), crawlerProps);
+
+        controller.start(factory, crawlerProps.getNumberOfCrawlers());
         // pool.close();
     }
 
