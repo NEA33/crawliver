@@ -23,6 +23,7 @@ public class PostgreSQLService implements DatabaseService {
     private final String insertSQL = "INSERT INTO page(" +
             "url, " +
             "domain, " +
+            "sub_domain, " +
             "type, " +
             "encoding, " +
             "language, " +
@@ -34,7 +35,7 @@ public class PostgreSQLService implements DatabaseService {
             "html_size, " +
             "title, " +
             "stamp" +
-            ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)";
+            ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
     private final String selectSQL = "SELECT id, stamp FROM page WHERE url = (?)";
 
@@ -53,15 +54,16 @@ public class PostgreSQLService implements DatabaseService {
 
             statement.setString(1, url);
             statement.setString(2, page.getWebURL().getDomain());
-            statement.setString(3, page.getContentType());
-            statement.setString(4, page.getContentEncoding());
-            statement.setString(5, page.getLanguage());
-            statement.setInt(6, page.getStatusCode());
-            statement.setInt(7, page.getContentData().length);
+            statement.setString(3, page.getWebURL().getSubDomain());
+            statement.setString(4, page.getContentType());
+            statement.setString(5, page.getContentEncoding());
+            statement.setString(6, page.getLanguage());
+            statement.setInt(7, page.getStatusCode());
+            statement.setInt(8, page.getContentData().length);
 
             ParseData parseData = page.getParseData();
-            statement.setInt(8, parseData.getOutgoingUrls().size());
-            statement.setInt(9, (int) parseData.getOutgoingUrls()
+            statement.setInt(9, parseData.getOutgoingUrls().size());
+            statement.setInt(10, (int) parseData.getOutgoingUrls()
                     .stream()
                     .filter(link -> !link.getURL().contains(domainRestriction))
                     .count()
@@ -69,17 +71,17 @@ public class PostgreSQLService implements DatabaseService {
 
             if (parseData instanceof TextParseData) {
                 TextParseData textParseData = (TextParseData) parseData;
-                statement.setInt(10, textParseData.getTextContent().length());
+                statement.setInt(11, textParseData.getTextContent().length());
             }
 
             if (parseData instanceof HtmlParseData) {
                 HtmlParseData htmlParseData = (HtmlParseData) parseData;
-                statement.setInt(10, htmlParseData.getText().length());
-                statement.setInt(11, htmlParseData.getHtml().length());
-                statement.setString(12, htmlParseData.getTitle());
+                statement.setInt(11, htmlParseData.getText().length());
+                statement.setInt(12, htmlParseData.getHtml().length());
+                statement.setString(13, htmlParseData.getTitle());
             }
 
-            statement.setTimestamp(13, new Timestamp(new java.util.Date().getTime()));
+            statement.setTimestamp(14, new Timestamp(new java.util.Date().getTime()));
 
             logger.info("Storing page with url: {}", url);
             statement.executeUpdate();
