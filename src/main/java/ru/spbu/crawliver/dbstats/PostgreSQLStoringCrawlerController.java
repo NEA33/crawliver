@@ -4,25 +4,19 @@ import com.mchange.v2.c3p0.ComboPooledDataSource;
 import edu.uci.ics.crawler4j.crawler.CrawlController;
 import org.flywaydb.core.Flyway;
 import ru.spbu.crawliver.controllers.AbstractCrawlerController;
+import ru.spbu.crawliver.helpers.CrawlerProperties;
+import ru.spbu.crawliver.helpers.DatabaseProperties;
 
 import java.beans.PropertyVetoException;
 
 public class PostgreSQLStoringCrawlerController extends AbstractCrawlerController {
 
-    private final String url;
-    private final String user;
-    private final String password;
+    private final DatabaseProperties databaseProps;
 
-    public PostgreSQLStoringCrawlerController(String crawlStorageFolder, String entryPoint,
-                                              String domain, int politenessDelay,
-                                              int depth, int numberOfCrawlers,
-                                              String url, String user, String password) {
-
-        super(crawlStorageFolder, entryPoint, domain, politenessDelay, depth, numberOfCrawlers);
-
-        this.url = url;
-        this.user = user;
-        this.password = password;
+    public PostgreSQLStoringCrawlerController(CrawlerProperties crawlerProps,
+                                              DatabaseProperties databaseProps) {
+        super(crawlerProps);
+        this.databaseProps = databaseProps;
     }
 
     @Override
@@ -30,23 +24,29 @@ public class PostgreSQLStoringCrawlerController extends AbstractCrawlerControlle
         final CrawlController controller = configureController();
         migrate();
         final ComboPooledDataSource pool = configurePool();
-        controller.start(new PostgreSQLCrawlerFactory(pool, domain), numberOfCrawlers);
+        controller.start(new PostgreSQLCrawlerFactory(pool, crawlerProps), crawlerProps.getNumberOfCrawlers());
+
+        pool.close();
     }
 
     private void migrate() {
-        Flyway flyway = Flyway.configure().dataSource(url, user, password).load();
+        Flyway flyway = Flyway.configure().dataSource(
+                databaseProps.getUrl(),
+                databaseProps.getUser(),
+                databaseProps.getPassword()
+        ).load();
         flyway.migrate();
     }
 
     private ComboPooledDataSource configurePool() throws PropertyVetoException {
         final ComboPooledDataSource pool = new ComboPooledDataSource();
-        pool.setDriverClass("org.postgresql.Driver");
-        pool.setJdbcUrl(url);
-        pool.setUser(user);
-        pool.setPassword(password);
-        pool.setMaxPoolSize(numberOfCrawlers);
-        pool.setMinPoolSize(numberOfCrawlers);
-        pool.setInitialPoolSize(numberOfCrawlers);
+        pool.setDriverClass(databaseProps.getDriver());
+        pool.setJdbcUrl(databaseProps.getUrl());
+        pool.setUser(databaseProps.getUser());
+        pool.setPassword(databaseProps.getPassword());
+        pool.setMaxPoolSize(crawlerProps.getNumberOfCrawlers());
+        pool.setMinPoolSize(crawlerProps.getNumberOfCrawlers());
+        pool.setInitialPoolSize(crawlerProps.getNumberOfCrawlers());
         return pool;
     }
 }

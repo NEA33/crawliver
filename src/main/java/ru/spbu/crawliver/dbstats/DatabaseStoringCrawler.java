@@ -6,6 +6,7 @@ import edu.uci.ics.crawler4j.url.WebURL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.spbu.crawliver.db.DatabaseService;
+import ru.spbu.crawliver.helpers.CrawlerProperties;
 
 import java.util.regex.Pattern;
 
@@ -20,21 +21,23 @@ public class DatabaseStoringCrawler extends WebCrawler {
             "|avi|mov|mpeg|ram|m4v|wmv|rm|smil" +
             "|swf" +
             "|zip|rar|gz|bz2|7z|bin" +
-            "|xml|txt|java|c|cpp|exe" +
+            "|java|c|cpp|exe" +
             "))$");
 
     private final DatabaseService service;
-    private final String domain;
+    private final CrawlerProperties crawlerProps;
 
-    public DatabaseStoringCrawler(DatabaseService service, String domain) {
+    public DatabaseStoringCrawler(DatabaseService service, CrawlerProperties crawlerProps) {
         this.service = service;
-        this.domain = domain;
+        this.crawlerProps = crawlerProps;
     }
 
     @Override
     public boolean shouldVisit(Page referringPage, WebURL url) {
         final String href = url.getURL().toLowerCase();
-        return href.contains(domain) && !FILE_ENDING_EXCLUSION_PATTERN.matcher(href).matches();
+        return href.contains(crawlerProps.getDomainRestriction())
+                && !FILE_ENDING_EXCLUSION_PATTERN.matcher(href).matches()
+                && service.isNew(referringPage);
     }
 
     @Override
@@ -44,7 +47,7 @@ public class DatabaseStoringCrawler extends WebCrawler {
         logger.info("ContentType: {}", page.getContentType());
 
         try {
-            service.store(page);
+            service.store(page, crawlerProps.getDomainRestriction());
         } catch (RuntimeException e) {
             logger.error("Storing failed", e);
         }
