@@ -1,6 +1,8 @@
 package ru.spbu.crawliver.runtimestats;
 
 import edu.uci.ics.crawler4j.crawler.CrawlController;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.spbu.crawliver.controllers.AbstractCrawlerController;
 import ru.spbu.crawliver.helpers.CrawlerProperties;
 
@@ -8,9 +10,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class MainController extends AbstractCrawlerController {
+public class RuntimeStatsController extends AbstractCrawlerController {
 
-    public MainController(CrawlerProperties crawlerProps) {
+    private final Logger logger = LoggerFactory.getLogger(RuntimeStatsController.class);
+
+    public RuntimeStatsController(CrawlerProperties crawlerProps) {
         super(crawlerProps);
     }
 
@@ -18,8 +22,8 @@ public class MainController extends AbstractCrawlerController {
     public void crawl() throws Exception {
         final CrawlController controller = configureController();
 
-        CrawlController.WebCrawlerFactory<MainCrawler> factory =
-                () -> new MainCrawler(crawlerProps);
+        CrawlController.WebCrawlerFactory<RuntimeStatsCrawler> factory =
+                () -> new RuntimeStatsCrawler(crawlerProps);
         controller.start(factory, crawlerProps.getNumberOfCrawlers());
 
         accumulate(controller.getCrawlersLocalData());
