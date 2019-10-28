@@ -2,6 +2,7 @@ package ru.spbu.crawliver.runtimestats;
 
 import edu.uci.ics.crawler4j.crawler.CrawlController;
 import ru.spbu.crawliver.controllers.AbstractCrawlerController;
+import ru.spbu.crawliver.helpers.CrawlerProperties;
 
 import java.util.HashSet;
 import java.util.List;
@@ -9,18 +10,17 @@ import java.util.Set;
 
 public class MainController extends AbstractCrawlerController {
 
-    public MainController(String crawlStorageFolder, String entryPoint,
-                          String domain, int politenessDelay,
-                          int depth, int numberOfCrawlers) {
-        super(crawlStorageFolder, entryPoint, domain, politenessDelay, depth, numberOfCrawlers);
+    public MainController(CrawlerProperties crawlerProps) {
+        super(crawlerProps);
     }
 
     @Override
     public void crawl() throws Exception {
         final CrawlController controller = configureController();
 
-        CrawlController.WebCrawlerFactory<MainCrawler> factory = () -> new MainCrawler(domain);
-        controller.start(factory, numberOfCrawlers);
+        CrawlController.WebCrawlerFactory<MainCrawler> factory =
+                () -> new MainCrawler(crawlerProps);
+        controller.start(factory, crawlerProps.getNumberOfCrawlers());
 
         accumulate(controller.getCrawlersLocalData());
     }
@@ -48,7 +48,7 @@ public class MainController extends AbstractCrawlerController {
         logger.info("Total External Links Found: {}", externalLinks);
         logger.info("Total Text Length: {}", textLength);
         logger.info("Total HTML Length: {}", htmlLength);
-        logger.info("Total Subdomains: {}", subDomains);
+        logger.info("Subdomains: {}", subDomains);
         logger.info("Subdomains Number: {}", subDomains.size());
     }
 }

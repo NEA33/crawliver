@@ -6,6 +6,7 @@ import edu.uci.ics.crawler4j.parser.HtmlParseData;
 import edu.uci.ics.crawler4j.url.WebURL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.spbu.crawliver.helpers.CrawlerProperties;
 
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -17,16 +18,16 @@ public class MainCrawler extends WebCrawler {
 
     private final Logger logger = LoggerFactory.getLogger(MainCrawler.class);
     private final Stats stats = new Stats();
-    private final String domain;
+    private final CrawlerProperties crawlerProps;
 
-    MainCrawler(String domain) {
-        this.domain = domain;
+    MainCrawler(CrawlerProperties crawlerProps) {
+        this.crawlerProps = crawlerProps;
     }
 
     @Override
     public boolean shouldVisit(Page referringPage, WebURL url) {
         final String href = url.getURL().toLowerCase();
-        if (href.contains(domain)) {
+        if (href.contains(crawlerProps.getDomainRestriction())) {
             return !FILTERS.matcher(href).matches();
         } else {
             stats.externalLinks.incrementAndGet();
@@ -43,8 +44,7 @@ public class MainCrawler extends WebCrawler {
         stats.pages.incrementAndGet();
 
         // add domain to list if it is new
-        if (!stats.subDomains.contains(url.getDomain()))
-            stats.subDomains.add(url.getDomain());
+        stats.subDomains.add(url.getDomain());
 
         if (page.getParseData() instanceof HtmlParseData) {
             final HtmlParseData htmlParseData = (HtmlParseData) page.getParseData();
