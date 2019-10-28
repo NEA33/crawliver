@@ -5,10 +5,7 @@ import edu.uci.ics.crawler4j.crawler.CrawlController;
 import edu.uci.ics.crawler4j.fetcher.PageFetcher;
 import edu.uci.ics.crawler4j.robotstxt.RobotstxtConfig;
 import edu.uci.ics.crawler4j.robotstxt.RobotstxtServer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import ru.spbu.crawliver.helpers.CrawlerProperties;
-import ru.spbu.crawliver.runtimestats.MainController;
 
 public abstract class AbstractCrawlerController implements CrawlerController {
 
@@ -17,8 +14,6 @@ public abstract class AbstractCrawlerController implements CrawlerController {
     public AbstractCrawlerController(CrawlerProperties crawlerProps) {
         this.crawlerProps = crawlerProps;
     }
-
-    protected final Logger logger = LoggerFactory.getLogger(MainController.class);
 
     public abstract void crawl() throws Exception;
 
