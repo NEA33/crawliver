@@ -14,7 +14,7 @@ public class DatabaseServiceTest {
 
     @Before
     public void init() throws Exception {
-        databaseProps = new DatabaseProperties("database.properties");
+        databaseProps = new DatabaseProperties("database.test.properties");
 
         final ComboPooledDataSource pool = new ComboPooledDataSource();
         pool.setDriverClass(databaseProps.getDriver());
