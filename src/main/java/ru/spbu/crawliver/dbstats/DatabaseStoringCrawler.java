@@ -36,8 +36,7 @@ public class DatabaseStoringCrawler extends WebCrawler {
     public boolean shouldVisit(Page referringPage, WebURL url) {
         final String href = url.getURL().toLowerCase();
         return href.contains(crawlerProps.getDomainRestriction())
-                && !FILE_ENDING_EXCLUSION_PATTERN.matcher(href).matches()
-                && service.isNew(referringPage);
+                && !FILE_ENDING_EXCLUSION_PATTERN.matcher(href).matches();
     }
 
     @Override
@@ -47,7 +46,9 @@ public class DatabaseStoringCrawler extends WebCrawler {
         logger.info("ContentType: {}", page.getContentType());
 
         try {
-            service.store(page, crawlerProps.getDomainRestriction());
+            if (service.isNew(page)) {
+                service.store(page, crawlerProps.getDomainRestriction());
+            }
         } catch (RuntimeException e) {
             logger.error("Storing failed", e);
         }
