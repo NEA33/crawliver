@@ -15,4 +15,13 @@ public class RuntimeStatsCrawlerCases {
         );
         controller.crawl();
     }
+
+    @Test
+    public void testExampleCom() throws Exception {
+        controller = new RuntimeStatsController(
+                new CrawlerProperties("example.crawler.properties")
+        );
+        controller.crawl();
+        // Total Links Found: 1
+    }
 }
