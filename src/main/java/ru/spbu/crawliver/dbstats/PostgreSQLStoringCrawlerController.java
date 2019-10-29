@@ -27,7 +27,7 @@ public class PostgreSQLStoringCrawlerController extends AbstractCrawlerControlle
                 () -> new DatabaseStoringCrawler(new PostgreSQLService(pool), crawlerProps);
 
         controller.start(factory, crawlerProps.getNumberOfCrawlers());
-        // pool.close();
+        pool.close();
     }
 
     private ComboPooledDataSource configurePool() throws PropertyVetoException {

@@ -12,30 +12,38 @@ import java.io.IOException;
 public class DatabaseStatsCrawlerCases {
 
     private CrawlerController controller;
-    private CrawlerProperties w3CrawlerProps;
+    private CrawlerProperties crawlerProps;
     private DatabaseProperties databaseProps;
 
     @Before
     public void init() throws IOException {
-        w3CrawlerProps = new CrawlerProperties("w3school.crawler.properties");
         databaseProps = new DatabaseProperties("database.test.properties");
-
         migrate(databaseProps);
-
-        controller = new PostgreSQLStoringCrawlerController(
-                w3CrawlerProps,
-                databaseProps
-        );
     }
 
     @Test
     public void testW3SchoolCrawler() throws Exception {
+        crawlerProps = new CrawlerProperties("w3school.crawler.properties");
+        controller = new PostgreSQLStoringCrawlerController(
+                crawlerProps,
+                databaseProps
+        );
+        controller.crawl();
+    }
+
+    @Test
+    public void testExampleCom() throws Exception {
+        crawlerProps = new CrawlerProperties("example.crawler.properties");
+        controller = new PostgreSQLStoringCrawlerController(
+                crawlerProps,
+                databaseProps
+        );
         controller.crawl();
     }
 
     @Test
     public void showProps() {
-        System.out.println(w3CrawlerProps);
+        System.out.println(crawlerProps);
         System.out.println(databaseProps);
     }
 
