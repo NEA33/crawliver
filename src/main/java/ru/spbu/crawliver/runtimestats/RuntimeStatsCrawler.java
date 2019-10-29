@@ -43,8 +43,8 @@ public class RuntimeStatsCrawler extends WebCrawler {
         // increment number of visited pages
         stats.pages.incrementAndGet();
 
-        // add domain to list if it is new
-        stats.subDomains.add(url.getDomain());
+        // add domain and sub domain to list if it is new
+        stats.subDomains.add(url.getSubDomain());
 
         if (page.getParseData() instanceof HtmlParseData) {
             final HtmlParseData htmlParseData = (HtmlParseData) page.getParseData();
