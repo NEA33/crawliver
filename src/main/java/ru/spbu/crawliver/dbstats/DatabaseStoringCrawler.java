@@ -10,6 +10,8 @@ import ru.spbu.crawliver.helpers.CrawlerProperties;
 
 import java.util.regex.Pattern;
 
+import static ru.spbu.crawliver.helpers.UrlHelper.*;
+
 public class DatabaseStoringCrawler extends WebCrawler {
 
     private static final Logger logger = LoggerFactory.getLogger(DatabaseStoringCrawler.class);
@@ -35,15 +37,28 @@ public class DatabaseStoringCrawler extends WebCrawler {
     @Override
     public boolean shouldVisit(Page referringPage, WebURL url) {
         final String href = url.getURL().toLowerCase();
-        return href.contains(crawlerProps.getDomain())
-                && !FILE_ENDING_EXCLUSION_PATTERN.matcher(href).matches();
+        final String domain = domain(href);
+        final String subDomain = subDomain(href, domain);
+        final String rest = rest(href);
+
+        if (domain.equals(crawlerProps.getDomain()) &&
+                rest.startsWith(crawlerProps.getLinkFilter())) {
+            return !FILE_ENDING_EXCLUSION_PATTERN.matcher(href).matches();
+        } else {
+            if (!subDomain.isEmpty() && domain.contains(crawlerProps.getDomain())) {
+                service.incrementDomainStats(subDomain);
+            } else {
+                logger.info("External link {} will be plussed to all", href);
+                service.incrementDomainStats("external");
+            }
+            return false;
+        }
     }
 
     @Override
     public void visit(Page page) {
         final String url = page.getWebURL().getURL();
-        logger.info("URL: {}", url);
-        logger.info("ContentType: {}", page.getContentType());
+        logger.info("On page: {}", url);
 
         try {
             if (service.isNew(page)) {
