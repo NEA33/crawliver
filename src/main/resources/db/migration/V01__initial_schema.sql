@@ -10,7 +10,7 @@ CREATE TABLE page
     sub_domain_links INTEGER,
     text_size        INTEGER,
     html_size        INTEGER,
-    title            VARCHAR(128),
+    title            VARCHAR(256),
     stamp            TIMESTAMP     NOT NULL,
     PRIMARY KEY (id)
 );

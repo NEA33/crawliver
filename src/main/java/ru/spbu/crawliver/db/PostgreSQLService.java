@@ -83,7 +83,7 @@ public class PostgreSQLService implements DatabaseService {
                 HtmlParseData htmlParseData = (HtmlParseData) parseData;
                 statement.setInt(8, htmlParseData.getText().length());
                 statement.setInt(9, htmlParseData.getHtml().length());
-                statement.setString(10, htmlParseData.getTitle().substring(0, 128)); // for safety
+                statement.setString(10, htmlParseData.getTitle());
             }
 
             statement.setTimestamp(11, new Timestamp(new java.util.Date().getTime()));
@@ -119,7 +119,7 @@ public class PostgreSQLService implements DatabaseService {
                 logger.info("New sub domain: {} storing...", domain);
                 statement = connection.prepareStatement(insertDomainSQL);
                 statement.setString(1, domain);
-                statement.setInt(2, 0);
+                statement.setInt(2, 1);
             }
             statement.executeUpdate();
 

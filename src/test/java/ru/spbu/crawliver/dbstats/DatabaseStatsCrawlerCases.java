@@ -14,21 +14,14 @@ public class DatabaseStatsCrawlerCases {
     private CrawlerController controller;
     private CrawlerProperties crawlerProps;
     private DatabaseProperties databaseProps;
+    private DatabaseProperties testDatabaseProps;
 
     @Before
     public void init() throws IOException {
-        databaseProps = new DatabaseProperties("database.test.properties");
+        databaseProps = new DatabaseProperties("database.properties");
+        testDatabaseProps = new DatabaseProperties("database.test.properties");
         migrate(databaseProps);
-    }
-
-    @Test
-    public void testW3SchoolCrawler() throws Exception {
-        crawlerProps = new CrawlerProperties("w3school.crawler.properties");
-        controller = new PostgreSQLStoringCrawlerController(
-                crawlerProps,
-                databaseProps
-        );
-        controller.crawl();
+        migrate(testDatabaseProps);
     }
 
     @Test
@@ -56,7 +49,17 @@ public class DatabaseStatsCrawlerCases {
         crawlerProps = new CrawlerProperties("example.crawler.properties");
         controller = new PostgreSQLStoringCrawlerController(
                 crawlerProps,
-                databaseProps
+                testDatabaseProps
+        );
+        controller.crawl();
+    }
+
+    @Test
+    public void testW3SchoolCrawler() throws Exception {
+        crawlerProps = new CrawlerProperties("w3school.crawler.properties");
+        controller = new PostgreSQLStoringCrawlerController(
+                crawlerProps,
+                testDatabaseProps
         );
         controller.crawl();
     }
@@ -65,6 +68,7 @@ public class DatabaseStatsCrawlerCases {
     public void showProps() {
         System.out.println(crawlerProps);
         System.out.println(databaseProps);
+        System.out.println(testDatabaseProps);
     }
 
     private void migrate(DatabaseProperties databaseProps) {

@@ -38,14 +38,14 @@ public class DatabaseStoringCrawler extends WebCrawler {
     public boolean shouldVisit(Page referringPage, WebURL url) {
         final String href = url.getURL().toLowerCase();
         final String domain = domain(href);
-        final String subDomain = subDomain(href, domain);
+        final String subDomain = subDomain(href, crawlerProps.getDomain());
         final String rest = rest(href);
 
         if (domain.equals(crawlerProps.getDomain()) &&
                 rest.startsWith(crawlerProps.getLinkFilter())) {
             return !FILE_ENDING_EXCLUSION_PATTERN.matcher(href).matches();
         } else {
-            if (!subDomain.isEmpty() && domain.contains(crawlerProps.getDomain())) {
+            if (!subDomain.isEmpty()) {
                 service.incrementDomainStats(subDomain);
             } else {
                 logger.info("External link {} will be plussed to all", href);
