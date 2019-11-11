@@ -7,7 +7,8 @@ public class CrawlerProperties {
 
     private final String crawlStorageFolder;
     private final String entryPoint;
-    private final String domainRestriction;
+    private final String domain;
+    private final String linkFilter;
     private final int politenessDelay;
     private final int maxDepthOfCrawling;
     private final int maxPagesToFetch;
@@ -20,7 +21,8 @@ public class CrawlerProperties {
         final Properties properties = helper.getProperties(propertiesFileName);
         this.crawlStorageFolder = properties.getProperty("crawlStorageFolder");
         this.entryPoint = properties.getProperty("entryPoint");
-        this.domainRestriction = properties.getProperty("domainRestriction");
+        this.domain = properties.getProperty("domain");
+        this.linkFilter = properties.getProperty("linkFilter");
         this.politenessDelay = Integer.parseInt(properties.getProperty("politenessDelay"));
         this.maxDepthOfCrawling = Integer.parseInt(properties.getProperty("maxDepthOfCrawling"));
         this.maxPagesToFetch = Integer.parseInt(properties.getProperty("maxPagesToFetch"));
@@ -36,8 +38,12 @@ public class CrawlerProperties {
         return entryPoint;
     }
 
-    public String getDomainRestriction() {
-        return domainRestriction;
+    public String getDomain() {
+        return domain;
+    }
+
+    public String getLinkFilter() {
+        return linkFilter;
     }
 
     public int getPolitenessDelay() {
@@ -65,7 +71,8 @@ public class CrawlerProperties {
         return "CrawlerProperties{" +
                 "crawlStorageFolder='" + crawlStorageFolder + '\'' +
                 ", entryPoint='" + entryPoint + '\'' +
-                ", domainRestriction='" + domainRestriction + '\'' +
+                ", domain='" + domain + '\'' +
+                ", linkFilter='" + linkFilter + '\'' +
                 ", politenessDelay=" + politenessDelay +
                 ", maxDepthOfCrawling=" + maxDepthOfCrawling +
                 ", maxPagesToFetch=" + maxPagesToFetch +
