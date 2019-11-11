@@ -8,10 +8,9 @@ import edu.uci.ics.crawler4j.parser.TextParseData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.sql.*;
+
+import static ru.spbu.crawliver.helpers.UrlHelper.*;
 
 public class PostgreSQLService implements DatabaseService {
 
@@ -19,75 +18,113 @@ public class PostgreSQLService implements DatabaseService {
 
     private ComboPooledDataSource comboPooledDataSource;
     private PreparedStatement statement;
+    private Connection connection;
 
-    private final String insertSQL = "INSERT INTO page(" +
-            "url, " +
+    private final String insertPageSQL = "INSERT INTO page(" +
             "domain, " +
-            "sub_domain, " +
-            "type, " +
-            "encoding, " +
+            "url, " +
             "language, " +
-            "status_code, " +
             "bytes_length, " +
             "total_links, " +
             "external_links, " +
+            "sub_domain_links, " +
             "text_size, " +
             "html_size, " +
             "title, " +
             "stamp" +
-            ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+            ") VALUES (?,?,?,?,?,?,?,?,?,?,?)";
 
-    private final String selectSQL = "SELECT id, stamp FROM page WHERE url = (?)";
+    private final String selectPageSQL = "SELECT id, stamp FROM page WHERE domain = (?) AND url = (?)";
 
-    public PostgreSQLService(ComboPooledDataSource comboPooledDataSource) {
+    private final String updateDomainSQL = "UPDATE domain SET number = (?) WHERE id = (?)";
+
+    private final String insertDomainSQL = "INSERT INTO domain(name, number) VALUES (?, ?)";
+
+    private final String selectDomainSQL = "SELECT id, number FROM domain WHERE name = (?)";
+
+    public PostgreSQLService(ComboPooledDataSource comboPooledDataSource) throws SQLException {
         this.comboPooledDataSource = comboPooledDataSource;
+        connection = comboPooledDataSource.getConnection();
     }
 
     @Override
     public void store(Page page, String domainRestriction) {
         final String url = page.getWebURL().getURL();
+        final String domain = domain(url);
+        final String rest = rest(url);
 
         try {
-            statement = comboPooledDataSource
-                    .getConnection()
-                    .prepareStatement(insertSQL);
+            statement = connection.prepareStatement(insertPageSQL);
 
-            statement.setString(1, url);
-            statement.setString(2, page.getWebURL().getDomain());
-            statement.setString(3, page.getWebURL().getSubDomain());
-            statement.setString(4, page.getContentType());
-            statement.setString(5, page.getContentEncoding());
-            statement.setString(6, page.getLanguage());
-            statement.setInt(7, page.getStatusCode());
-            statement.setInt(8, page.getContentData().length);
+            statement.setString(1, domain);
+            statement.setString(2, rest);
+            statement.setString(3, page.getLanguage());
+            statement.setInt(4, page.getContentData().length);
 
             ParseData parseData = page.getParseData();
-            statement.setInt(9, parseData.getOutgoingUrls().size());
-            statement.setInt(10, (int) parseData.getOutgoingUrls()
+            statement.setInt(5, parseData.getOutgoingUrls().size());
+            statement.setInt(6, (int) parseData.getOutgoingUrls()
                     .stream()
                     .filter(link -> !link.getURL().contains(domainRestriction))
+                    .count()
+            );
+            statement.setInt(7, (int) parseData.getOutgoingUrls()
+                    .stream()
+                    .filter(link -> !subDomain(link.getURL(), domainRestriction).isEmpty())
                     .count()
             );
 
             if (parseData instanceof TextParseData) {
                 TextParseData textParseData = (TextParseData) parseData;
-                statement.setInt(11, textParseData.getTextContent().length());
+                statement.setInt(8, textParseData.getTextContent().length());
             }
 
             if (parseData instanceof HtmlParseData) {
                 HtmlParseData htmlParseData = (HtmlParseData) parseData;
-                statement.setInt(11, htmlParseData.getText().length());
-                statement.setInt(12, htmlParseData.getHtml().length());
-                statement.setString(13, htmlParseData.getTitle());
+                statement.setInt(8, htmlParseData.getText().length());
+                statement.setInt(9, htmlParseData.getHtml().length());
+                statement.setString(10, htmlParseData.getTitle().substring(0, 128)); // for safety
             }
 
-            statement.setTimestamp(14, new Timestamp(new java.util.Date().getTime()));
+            statement.setTimestamp(11, new Timestamp(new java.util.Date().getTime()));
 
-            logger.info("Storing page with url: {}", url);
+            logger.info("Storing page: {}", url);
             statement.executeUpdate();
 
         } catch (SQLException e) {
             logger.error("SQL Exception while storing page for url'{}'", url, e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void incrementDomainStats(String domain) {
+        try {
+            statement = connection.prepareStatement(selectDomainSQL);
+            statement.setString(1, domain);
+            final ResultSet resultSet = statement.executeQuery();
+
+            if (resultSet.next()) {
+                int id = resultSet.getInt("id");
+                int references = resultSet.getInt("number");
+                logger.info("Sub domain: {} is present in database, id: {}, references: {}, incrementing...",
+                        domain,
+                        id,
+                        references
+                );
+                statement = connection.prepareStatement(updateDomainSQL);
+                statement.setInt(1, references + 1);
+                statement.setInt(2, id);
+            } else {
+                logger.info("New sub domain: {} storing...", domain);
+                statement = connection.prepareStatement(insertDomainSQL);
+                statement.setString(1, domain);
+                statement.setInt(2, 0);
+            }
+            statement.executeUpdate();
+
+        } catch (SQLException e) {
+            logger.error("SQL Exception while storing domain {}", domain, e);
             throw new RuntimeException(e);
         }
     }
@@ -100,11 +137,9 @@ public class PostgreSQLService implements DatabaseService {
     @Override
     public boolean isNew(String url) {
         try {
-            statement = comboPooledDataSource
-                    .getConnection()
-                    .prepareStatement(selectSQL);
-
-            statement.setString(1, url);
+            statement = connection.prepareStatement(selectPageSQL);
+            statement.setString(1, domain(url));
+            statement.setString(2, rest(url));
 
             final ResultSet resultSet = statement.executeQuery();
 
