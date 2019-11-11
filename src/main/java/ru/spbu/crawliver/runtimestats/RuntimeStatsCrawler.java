@@ -11,10 +11,19 @@ import ru.spbu.crawliver.helpers.CrawlerProperties;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import static ru.spbu.crawliver.helpers.UrlHelper.*;
+
 public class RuntimeStatsCrawler extends WebCrawler {
 
-    private final static Pattern FILTERS = Pattern.compile(".*(\\.(css|js|bmp|gif|jpe?g|png|tiff?|mid|mp2|mp3|mp4|wav" +
-            "|avi|mov|mpeg|ram|m4v|rm|smil|wmv|swf|wma|zip|rar|gz))$");
+    private static final Pattern FILE_ENDING_EXCLUSION_PATTERN = Pattern.compile(".*(\\.(" +
+            "css|js" +
+            "|bmp|gif|jpe?g|JPE?G|png|tiff?|ico|nef|raw" +
+            "|mid|mp2|mp3|mp4|wav|wma|flv|mpe?g" +
+            "|avi|mov|mpeg|ram|m4v|wmv|rm|smil" +
+            "|swf" +
+            "|zip|rar|gz|bz2|7z|bin" +
+            "|java|c|cpp|exe" +
+            "))$");
 
     private final Logger logger = LoggerFactory.getLogger(RuntimeStatsCrawler.class);
     private final Stats stats = new Stats();
@@ -26,11 +35,23 @@ public class RuntimeStatsCrawler extends WebCrawler {
 
     @Override
     public boolean shouldVisit(Page referringPage, WebURL url) {
-        final String href = url.getURL().toLowerCase();
-        if (href.contains(crawlerProps.getDomainRestriction())) {
-            return !FILTERS.matcher(href).matches();
+        final String domain = domain(url.getURL());
+        final String subDomain = subDomain(url.getURL(), domain);
+        final String rest = rest(url.getURL());
+
+        stats.links++;
+        if (domain.equals(crawlerProps.getDomain()) &&
+                rest.startsWith(crawlerProps.getLinkFilter())) {
+            return !FILE_ENDING_EXCLUSION_PATTERN.matcher(url.getURL().toLowerCase()).matches();
         } else {
-            stats.externalLinks.incrementAndGet();
+            if (!subDomain.isEmpty() && domain.contains(crawlerProps.getDomain())) {
+                stats.subDomains.put(
+                        subDomain,
+                        1 + stats.subDomains.getOrDefault(subDomain, 0)
+                );
+            } else {
+                stats.externalLinks++;
+            }
             return false;
         }
     }
@@ -40,11 +61,7 @@ public class RuntimeStatsCrawler extends WebCrawler {
         final WebURL url = page.getWebURL();
         logger.info("URL: " + url.getURL());
 
-        // increment number of visited pages
-        stats.pages.incrementAndGet();
-
-        // add domain and sub domain to list if it is new
-        stats.subDomains.add(url.getSubDomain());
+        stats.pages++;
 
         if (page.getParseData() instanceof HtmlParseData) {
             final HtmlParseData htmlParseData = (HtmlParseData) page.getParseData();
@@ -53,14 +70,10 @@ public class RuntimeStatsCrawler extends WebCrawler {
             final String html = htmlParseData.getHtml();
             final Set<WebURL> links = htmlParseData.getOutgoingUrls();
 
-            stats.textLength.addAndGet(text.length());
-            stats.htmlLength.addAndGet(html.length());
-            stats.links.addAndGet(links.size());
+            stats.textLength += text.length();
+            stats.htmlLength += html.length();
+            stats.bytesLength += html.getBytes().length;
 
-            logger.info("Domain: " + url.getDomain());
-            logger.info("Sub Domain: " + url.getSubDomain());
-            logger.info("Text length: " + text.length());
-            logger.info("Html length: " + html.length());
             logger.info("Number of outgoing links: " + links.size());
         }
     }
@@ -75,10 +88,11 @@ public class RuntimeStatsCrawler extends WebCrawler {
         int id = getMyId();
 
         logger.info("Crawler {} > Processed Pages: {}", id, stats.pages);
-        logger.info("Crawler {} > Total Links Found: {}", id, stats.links);
-        logger.info("Crawler {} > Total External Links Found: {}", id, stats.externalLinks);
+        logger.info("Crawler {} > Links Found: {}", id, stats.links);
+        logger.info("Crawler {} > External Links Found: {}", id, stats.externalLinks);
         logger.info("Crawler {} > Total Text Length: {}", id, stats.textLength);
         logger.info("Crawler {} > Total HTML Length: {}", id, stats.htmlLength);
+        logger.info("Crawler {} > Total Bytes Length: {}", id, stats.bytesLength);
         logger.info("Crawler {} > Subdomains: {}", id, stats.subDomains);
     }
 }

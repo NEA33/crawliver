@@ -24,4 +24,12 @@ public class RuntimeStatsCrawlerCases {
         controller.crawl();
         // Total Links Found: 1
     }
+
+    @Test
+    public void testSpbuCrawler() throws Exception {
+        controller = new RuntimeStatsController(
+                new CrawlerProperties("spbu.crawler.properties")
+        );
+        controller.crawl();
+    }
 }

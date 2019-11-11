@@ -6,9 +6,7 @@ import org.slf4j.LoggerFactory;
 import ru.spbu.crawliver.controllers.AbstractCrawlerController;
 import ru.spbu.crawliver.helpers.CrawlerProperties;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class RuntimeStatsController extends AbstractCrawlerController {
 
@@ -35,16 +33,23 @@ public class RuntimeStatsController extends AbstractCrawlerController {
         long externalLinks = 0L;
         long textLength = 0L;
         long htmlLength = 0L;
-        final Set<String> subDomains = new HashSet<>();
+        long bytesLength = 0L;
+        final Map<String, Integer> subDomains = new HashMap<>();
 
         for (Object obj : data) {
             final Stats stats = (Stats) obj;
-            pages += stats.pages.get();
-            links += stats.links.get();
-            externalLinks += stats.externalLinks.get();
-            textLength += stats.textLength.get();
-            htmlLength += stats.htmlLength.get();
-            subDomains.addAll(stats.subDomains);
+            pages += stats.pages;
+            links += stats.links;
+            externalLinks += stats.externalLinks;
+            textLength += stats.textLength;
+            htmlLength += stats.htmlLength;
+            bytesLength += stats.bytesLength;
+
+            stats.subDomains.forEach((key, value) -> subDomains.merge(
+                    key,
+                    value,
+                    Integer::sum)
+            );
         }
 
         logger.info("Total Processed Pages: {}", pages);
@@ -52,7 +57,9 @@ public class RuntimeStatsController extends AbstractCrawlerController {
         logger.info("Total External Links Found: {}", externalLinks);
         logger.info("Total Text Length: {}", textLength);
         logger.info("Total HTML Length: {}", htmlLength);
+        logger.info("Total Bytes Length: {}", bytesLength);
         logger.info("Subdomains: {}", subDomains);
         logger.info("Subdomains Number: {}", subDomains.size());
+        logger.info("Subdomains Links: {}", subDomains.values().stream().mapToInt(it -> it).sum());
     }
 }

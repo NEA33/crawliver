@@ -1,17 +1,15 @@
 package ru.spbu.crawliver.runtimestats;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.HashMap;
+import java.util.Map;
 
 class Stats {
-    AtomicInteger pages = new AtomicInteger();
-    // AtomicInteger brokenPages = new AtomicInteger();
-    AtomicInteger links = new AtomicInteger();
-    AtomicInteger externalLinks = new AtomicInteger();
-    AtomicLong textLength = new AtomicLong();
-    AtomicLong htmlLength = new AtomicLong();
+    int pages = 0;
+    long links = 0L;
+    long externalLinks = 0L;
+    long textLength = 0L;
+    long htmlLength = 0L;
+    long bytesLength = 0L;
 
-    Set<String> subDomains = new HashSet<>();
+    Map<String, Integer> subDomains = new HashMap<>();
 }
