@@ -32,6 +32,26 @@ public class DatabaseStatsCrawlerCases {
     }
 
     @Test
+    public void testSpbuCrawler() throws Exception {
+        crawlerProps = new CrawlerProperties("spbu.crawler.properties");
+        controller = new PostgreSQLStoringCrawlerController(
+                crawlerProps,
+                databaseProps
+        );
+        controller.crawl();
+    }
+
+    @Test
+    public void testMsuCrawler() throws Exception {
+        crawlerProps = new CrawlerProperties("msu.crawler.properties");
+        controller = new PostgreSQLStoringCrawlerController(
+                crawlerProps,
+                databaseProps
+        );
+        controller.crawl();
+    }
+
+    @Test
     public void testExampleCom() throws Exception {
         crawlerProps = new CrawlerProperties("example.crawler.properties");
         controller = new PostgreSQLStoringCrawlerController(
